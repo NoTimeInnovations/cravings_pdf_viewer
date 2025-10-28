@@ -40,6 +40,7 @@
   </style>
 </head>
 <body>
+  <a href="index.html" class="back-button">← Back to Menu List</a>
   <div id="pdf-container" class="p-4"></div>
 
   <script>
@@ -47,8 +48,11 @@
       "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js";
 
     // Menu data (must match script.js)
+    // Use absolute paths from root
     const menuData = [
-      { name: "salkara", path: "assets/salkara.pdf" },
+      { name: "salkara", path: "/assets/salkara.pdf" },
+      { name: "arabian", path: "/assets/arabian.pdf" },
+      { name: "buhari", path: "/assets/buhari.pdf" }
     ];
 
     const pdfContainer = document.getElementById("pdf-container");
