@@ -1,8 +1,6 @@
 // Simple restaurant data
 const menuData = [
   { name: "salkara", path: "assets/salkara.pdf" },
-  { name: "arabian", path: "assets/arabian.pdf" },
-  { name: "buhari", path: "assets/buhari.pdf" }
 ];
 
 document.addEventListener("DOMContentLoaded", () => {
