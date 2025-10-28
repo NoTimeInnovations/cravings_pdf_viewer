@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/menu/:slug", "destination": "/menu.html?restaurant=:slug" }
+  ]
+}

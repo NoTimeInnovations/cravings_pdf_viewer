@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu Viewer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: black;
+    }
+    #pdf-container {
+      height: 100vh;
+      overflow-y: auto;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto 20px auto;
+      max-width: 100%;
+    }
+    .back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      background: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .back-button:hover {
+      background: #f3f4f6;
+    }
+  </style>
+</head>
+<body>
+  <div id="pdf-container" class="p-4"></div>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.11.338/pdf.worker.min.js";
+
+    // Menu data (must match script.js)
+    const menuData = [
+      { name: "salkara", path: "assets/salkara.pdf" },
+    ];
+
+    const pdfContainer = document.getElementById("pdf-container");
+
+    // Get restaurant from query parameter OR path (Vercel support)
+    let restaurant = null;
+    
+    // Try query parameter first (for local development)
+    const urlParams = new URLSearchParams(window.location.search);
+    restaurant = urlParams.get('restaurant');
+    
+    // Fallback to path-based routing (for Vercel)
+    if (!restaurant) {
+      const pathParts = window.location.pathname.split("/");
+      restaurant = pathParts[pathParts.length - 1];
+      // Remove .html if present
+      if (restaurant === 'menu.html' || restaurant === '') {
+        restaurant = null;
+      }
+    }
+
+    const menu = menuData.find((m) => m.name === restaurant);
+
+    if (!menu) {
+      pdfContainer.innerHTML = `
+        <div class="text-center mt-20">
+          <p class="text-white text-xl mb-4">Menu not found${restaurant ? ` for "${restaurant}"` : ''}.</p>
+          <a href="index.html" class="inline-block px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+            Go Back to Menu List
+          </a>
+        </div>
+      `;
+    } else {
+      loadPDF(menu.path);
+    }
+
+    async function loadPDF(path) {
+      try {
+        const loadingTask = pdfjsLib.getDocument(path);
+        const pdf = await loadingTask.promise;
+        pdfContainer.innerHTML = "";
+
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 1.5 });
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+          pdfContainer.appendChild(canvas);
+          await page.render({ canvasContext: context, viewport }).promise;
+        }
+      } catch (error) {
+        pdfContainer.innerHTML = `
+          <div class="text-center mt-20">
+            <p class="text-red-500 text-xl mb-4">Error loading PDF: ${error.message}</p>
+            <a href="index.html" class="inline-block px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
+              Go Back to Menu List
+            </a>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
