@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Menu</title>
   </head>
   <body id="menu-container">
@@ -10,8 +8,7 @@
       body {
         margin: 0;
         padding: 0;
-        height: 100vh;
-        background-color: #f3f4f6;
+        min-height: 100vh;
       }
       img {
         height: auto;
@@ -19,8 +16,6 @@
       }
     </style>
     <script>
-      console.log("Fetching menu data...");
-
       const getMenu = async () => {
         try {
           const url = new URL(window.location.href);
@@ -32,7 +27,7 @@
             const img = document.createElement("img");
             img.src = `/public/menus/${partner}/page_${i}.webp`;
             img.alt = `Menu Page ${i}`;
-            img.loading = "lazy";
+            img.loading = "eager";
             img.fetchPriority = "high";
             img.className = "w-full mb-4 rounded-lg shadow-md";
             menuContainer.appendChild(img);
