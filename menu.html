@@ -1,150 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Menu Viewer</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background-color: #000;
-      color: white;
-      overflow-x: hidden;
-    }
-    #pdf-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-bottom: 100px;
-    }
-    img {
-      display: block;
-      margin: 20px auto;
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-    }
-    .loader {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      text-align: center;
-    }
-    .spinner {
-      border: 4px solid rgba(255, 255, 255, 0.2);
-      border-top: 4px solid #fbbf24;
-      border-radius: 50%;
-      width: 48px;
-      height: 48px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 12px;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .back-button {
-      position: fixed;
-      top: 20px;
-      left: 20px;
-      z-index: 1000;
-      background: white;
-      color: black;
-      padding: 10px 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .back-button:hover {
-      background: #f3f4f6;
-    }
-  </style>
-</head>
-<body>
-  <button class="back-button" onclick="window.location.href='index.html'">← Back</button>
-
-  <div id="loading-screen" class="loader">
-    <div class="spinner"></div>
-    <p class="text-gray-300">Loading menu, please wait...</p>
-  </div>
-
-  <div id="pdf-container"></div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const restaurant = urlParams.get("restaurant");
-      const pdfContainer = document.getElementById("pdf-container");
-      const loadingScreen = document.getElementById("loading-screen");
-
-      if (!restaurant) {
-        pdfContainer.innerHTML = `
-          <div class="text-center mt-20">
-            <p class="text-white text-xl mb-4">No restaurant specified.</p>
-            <a href="index.html" class="inline-block px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-              Go Back
-            </a>
-          </div>`;
-        loadingScreen.style.display = "none";
-        return;
-      }
-
-      try {
-        const response = await fetch("menuList.json");
-        const menus = await response.json();
-
-        if (!menus.includes(restaurant)) {
-          pdfContainer.innerHTML = `
-            <div class="text-center mt-20">
-              <p class="text-white text-xl mb-4">Menu not found for "${restaurant}".</p>
-              <a href="index.html" class="inline-block px-6 py-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700">
-                Go Back
-              </a>
-            </div>`;
-          loadingScreen.style.display = "none";
-          return;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menu</title>
+  </head>
+  <body id="menu-container">
+    <style>
+        body{
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background-color: #f3f4f6;
         }
-
-        const imageDir = `webp/${restaurant}/`;
-        let page = 1;
-        let found = false;
-
-        while (true) {
-          const imgUrl = `${imageDir}page_${page}.webp`;
-          const headCheck = await fetch(imgUrl, { method: "HEAD" });
-          if (!headCheck.ok) break;
-
-          found = true;
-          const img = new Image();
-          img.src = imgUrl;
-          img.loading = "lazy";
-          img.alt = `${restaurant} menu page ${page}`;
-          img.style.opacity = "0";
-          img.onload = () => (img.style.opacity = "1");
-          pdfContainer.appendChild(img);
-          page++;
+        img{
+            height: auto;
+            width: 100%;
         }
-
-        loadingScreen.style.display = "none";
-
-        if (!found) {
-          pdfContainer.innerHTML = `
-            <div class="text-center mt-20">
-              <p class="text-red-500 text-xl mb-4">No menu pages found for "${restaurant}".</p>
-            </div>`;
-        }
-      } catch (error) {
-        console.error("Error loading menu:", error);
-        loadingScreen.innerHTML = `
-          <p class="text-red-500 text-xl">Failed to load menu. Please try again later.</p>`;
-      }
-    });
-  </script>
-</body>
+    </style>
+    <script  src="/scripts/getMenu.js"></script>
+  </body>
 </html>
