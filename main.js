@@ -48,38 +48,20 @@ app.post("/upload", upload.array("files"), async (req, res) => {
     const targetDir = path.join(__dirname, "public", "menus", partner);
     await fsPromises.mkdir(targetDir, { recursive: true });
 
-    // Process and move uploaded files
+
     for (const f of req.files || []) {
-      // Check if the file is an image
+  
       if (f.mimetype.startsWith("image/")) {
-        // Parse the original name to change its extension to .webp
         const originalName = path.parse(f.originalname).name;
         const destPath = path.join(targetDir, `${originalName}.webp`);
-
-        // 1. Read the temporary file into a buffer
         const fileBuffer = await fsPromises.readFile(f.path);
 
-        if (originalName === "page_1") {
-          await sharp(fileBuffer)
-            .resize({ width: 500, withoutEnlargement: true })
-            .webp({ quality: 70 })
-            .toFile(destPath);
-
-          // 3. Now unlink the original temporary file.
-          //    (The file lock was released after step 1)
-          await fsPromises.unlink(f.path);
-        } else {
-          await sharp(fileBuffer)
-            .resize({ width: 800, withoutEnlargement: true })
-            .webp({ quality: 80 })
-            .toFile(destPath);
-
-          // 3. Now unlink the original temporary file.
-          //    (The file lock was released after step 1)
-          await fsPromises.unlink(f.path);
-        }
-
-        // 2. Process the buffer with Sharp
+        await sharp(fileBuffer)
+          .resize({ width: 1000, withoutEnlargement: true })
+          .webp({ quality: 100 })
+          .toFile(destPath);
+        
+        await fsPromises.unlink(f.path);
       } else {
         // If it's not an image (like data.json), just move it
         const destPath = path.join(targetDir, f.originalname);
