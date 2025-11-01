@@ -439,6 +439,14 @@
                     const fileName = `page_${image.pageNum}.webp`;
                     folder.file(fileName, image.blob);
                 });
+
+                // Add data.json with number of pages
+                try {
+                    const dataJson = JSON.stringify({ num_of_pages: totalPages }, null, 4);
+                    folder.file('data.json', dataJson);
+                } catch (err) {
+                    console.error('Error adding data.json to ZIP:', err);
+                }
                 
                 // Generate and download ZIP
                 const zipBlob = await zip.generateAsync({type: 'blob'});
