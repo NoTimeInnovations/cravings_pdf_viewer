@@ -13,6 +13,12 @@
       img {
         height: auto;
         width: 100%;
+        display: block;
+      }
+      /* Placeholder while images load */
+      img[data-src] {
+        background: #f0f0f0;
+        min-height: 400px;
       }
     </style>
     <script>
@@ -20,34 +26,52 @@
         try {
           const url = new URL(window.location.href);
           const menuContainer = document.getElementById("menu-container");
+          const partner = url.searchParams.get("partner");
 
-          partner = url.searchParams.get("partner");
+          // Load first image immediately (eager)
+          const firstImg = document.createElement("img");
+          firstImg.src = `/public/menus/${partner}/page_1.webp`;
+          firstImg.alt = `Menu Page 1`;
+          firstImg.loading = "eager";
+          firstImg.fetchPriority = "high";
+          firstImg.className = "w-full mb-4 rounded-lg shadow-md";
+          firstImg.width = "800";  // ✅ Add actual dimensions
+          firstImg.height = "1200"; // ✅ Add actual dimensions
+          menuContainer.appendChild(firstImg);
 
-          const img = document.createElement("img");
-          img.src = `/public/menus/${partner}/page_1.webp`;
-          img.alt = `Menu Page 1`;
-          img.loading = "eager";
-          img.fetchPriority = "high";
-          img.className = "w-full mb-4 rounded-lg shadow-md";
-          menuContainer.appendChild(img);
-
-          //get the menu/partner folder items
+          // Get menu data
           const response = await fetch(`/public/menus/${partner}/data.json`);
           const dataJson = await response.json();
-
           const numberOfPages = dataJson.num_of_pages;
 
-          console.log(
-            `Menu for partner ${partner} has ${numberOfPages} pages.`
-          );
+          console.log(`Menu for partner ${partner} has ${numberOfPages} pages.`);
 
-          for (let i = 5; i <= numberOfPages; i++) {
+          // Create Intersection Observer for lazy loading
+          const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src; // Load the actual image
+                img.removeAttribute('data-src');
+                imageObserver.unobserve(img);
+                console.log(`Loaded: ${img.alt}`);
+              }
+            });
+          }, {
+            rootMargin: '50px' // Start loading 50px before image enters viewport
+          });
+
+          // Create remaining images with lazy loading
+          for (let i = 2; i <= numberOfPages; i++) { // ✅ Fixed: starts at 2
             const img = document.createElement("img");
-            img.src = `/public/menus/${partner}/page_${i}.webp`;
+            img.dataset.src = `/public/menus/${partner}/page_${i}.webp`; // ✅ Use data-src
             img.alt = `Menu Page ${i}`;
-            img.loading = "lazy";
             img.className = "w-full mb-4 rounded-lg shadow-md";
+            img.width = "800";  // ✅ Add dimensions
+            img.height = "1200"; // ✅ Add dimensions
+            
             menuContainer.appendChild(img);
+            imageObserver.observe(img); // ✅ Observe for lazy loading
           }
         } catch (error) {
           console.error("Error fetching menu data:", error);
