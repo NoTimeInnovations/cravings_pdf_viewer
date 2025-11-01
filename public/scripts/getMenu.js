@@ -19,6 +19,7 @@ const getMenu = async () => {
       const img = document.createElement("img");
       img.src = `/public/menus/${partner}/page_${i}.webp`;
       img.alt = `Menu Page ${i}`;
+      img.loading = "lazy";
       img.className = "w-full mb-4 rounded-lg shadow-md";
       menuContainer.appendChild(img);
     }
