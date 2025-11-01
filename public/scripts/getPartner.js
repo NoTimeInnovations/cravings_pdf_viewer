@@ -2,7 +2,7 @@ console.log("Fetching partner data...");
 
 const getPartners = async () => {
   try {
-    const response = await fetch("/data/partners.json");
+    const response = await fetch("/public/data/partners.json");
     const partners = await response.json();
 
 
@@ -14,7 +14,7 @@ const getPartners = async () => {
     partners.forEach(partner => {
       const listItem = document.createElement("a");
       listItem.innerText = partner;
-      listItem.href = `/${partner}`;
+      listItem.href = `menu.html?partner=${partner}`;
       partnerList.appendChild(listItem);
     });
 
