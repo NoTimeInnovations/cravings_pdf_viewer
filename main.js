@@ -1,6 +1,17 @@
 const express = require('express');
 const app = express();
 const path = require('path');
+const fs = require('fs');
+const fsPromises = fs.promises;
+const multer = require('multer');
+
+// Temporary upload folder for multer
+const TMP_UPLOAD_DIR = path.join(__dirname, 'tmp_uploads');
+if (!fs.existsSync(TMP_UPLOAD_DIR)) {
+    fs.mkdirSync(TMP_UPLOAD_DIR, { recursive: true });
+}
+
+const upload = multer({ dest: TMP_UPLOAD_DIR });
 
 
 app.use(express.static(path.join(__dirname)));
@@ -9,16 +20,74 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/:partner', (req, res) => {
-    res.sendFile(path.join(__dirname, 'menu.html'));
-});
-
 app.get('/menu' , (req, res) => {
     res.sendFile(path.join(__dirname, 'menu.html'));
 });
 
-app.get('/convert' , (req, res) => {
-    res.sendFile(path.join(__dirname, 'menu-extract.html'));
+app.get('/converter' , (req, res) => {
+    res.sendFile(path.join(__dirname, 'converter.html'));
+});
+
+// Endpoint to receive converted images and data.json and create partner folder
+app.post('/upload', upload.array('files'), async (req, res) => {
+    try {
+        const partnerRaw = req.body.partner || req.body.folderName || '';
+        // sanitize partner name: allow letters, numbers, dash, underscore
+        const partner = String(partnerRaw).trim();
+        if (!partner || !/^[a-zA-Z0-9_-]+$/.test(partner)) {
+            // cleanup tmp files
+            if (req.files) {
+                for (const f of req.files) {
+                    fs.unlink(f.path, () => {});
+                }
+            }
+            return res.status(400).json({ error: 'Invalid partner name. Use only letters, numbers, - and _' });
+        }
+
+        const targetDir = path.join(__dirname, 'public', 'menus', partner);
+        await fsPromises.mkdir(targetDir, { recursive: true });
+
+        // Move uploaded files from tmp to target directory
+        for (const f of req.files || []) {
+            const destPath = path.join(targetDir, f.originalname);
+            // if file with same name exists, overwrite
+            await fsPromises.rename(f.path, destPath);
+        }
+
+        // Ensure data.json exists in target (if not uploaded as file but provided as field)
+        if (req.body.dataJson && !req.files.find(f => f.originalname === 'data.json')) {
+            const dataJsonPath = path.join(targetDir, 'data.json');
+            await fsPromises.writeFile(dataJsonPath, req.body.dataJson, 'utf8');
+        }
+
+        // Update partners list
+        const partnersFile = path.join(__dirname, 'public', 'data', 'partners.json');
+        let partners = [];
+        try {
+            const raw = await fsPromises.readFile(partnersFile, 'utf8');
+            partners = JSON.parse(raw);
+            if (!Array.isArray(partners)) partners = [];
+        } catch (e) {
+            // if file missing or invalid, start fresh
+            partners = [];
+        }
+
+        if (!partners.includes(partner)) {
+            partners.push(partner);
+            await fsPromises.writeFile(partnersFile, JSON.stringify(partners, null, 4), 'utf8');
+        }
+
+        return res.json({ success: true, partner });
+    } catch (err) {
+        console.error('Upload error:', err);
+        // cleanup tmp files
+        if (req.files) {
+            for (const f of req.files) {
+                fs.unlink(f.path, () => {});
+            }
+        }
+        return res.status(500).json({ error: 'Server error' });
+    }
 });
 
 app.get('/test' , async (req, res) => {
