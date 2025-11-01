@@ -3,8 +3,21 @@ console.log("Fetching menu data...");
 const getMenu = async () => {
   try {
     const url = new URL(window.location.href);
+    const menuContainer = document.getElementById("menu-container");
+
 
     partner = url.searchParams.get("partner");
+
+
+    for (let i = 1; i <= 5; i++) {
+      const img = document.createElement("img");
+      img.src = `/public/menus/${partner}/page_${i}.webp`;
+      img.alt = `Menu Page ${i}`;
+      img.loading = "lazy";
+      img.fetchPriority = "high";
+      img.className = "w-full mb-4 rounded-lg shadow-md";
+      menuContainer.appendChild(img);
+    }
 
     //get the menu/partner folder items
     const response = await fetch(`/public/menus/${partner}/data.json`);
@@ -14,8 +27,7 @@ const getMenu = async () => {
 
     console.log(`Menu for partner ${partner} has ${numberOfPages} pages.`);
 
-    const menuContainer = document.getElementById("menu-container");
-    for (let i = 1; i <= numberOfPages; i++) {
+    for (let i = 5; i <= numberOfPages; i++) {
       const img = document.createElement("img");
       img.src = `/public/menus/${partner}/page_${i}.webp`;
       img.alt = `Menu Page ${i}`;
