@@ -3,7 +3,7 @@ const app = express();
 const path = require('path');
 
 
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -17,8 +17,11 @@ app.get('/menu' , (req, res) => {
     res.sendFile(path.join(__dirname, 'menu.html'));
 });
 
-app.get('/test' , async (req, res) => {
+app.get('/convert' , (req, res) => {
+    res.sendFile(path.join(__dirname, 'menu-extract.html'));
+});
 
+app.get('/test' , async (req, res) => {
 
     for (let i=1; i<=50; i++) {
         const response = await fetch('https://cravings-pdf-viewer.pages.dev/menu?partner=salkara');

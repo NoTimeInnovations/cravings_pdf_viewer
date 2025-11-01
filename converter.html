@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to WebP Converter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: #333;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            margin-top: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .upload-area {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background-color: #e8f4fc;
+            border-color: #2980b9;
+        }
+
+        .upload-area i {
+            font-size: 48px;
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .upload-area p {
+            margin-bottom: 15px;
+            color: #7f8c8d;
+        }
+
+        .btn {
+            display: inline-block;
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+        }
+
+        .progress-container {
+            margin: 25px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #ecf0f1;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #2ecc71, #1abc9c);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        #output {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .download-btn {
+            background: linear-gradient(to right, #2ecc71, #27ae60);
+            margin-top: 20px;
+            display: none;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+
+        .page-previews {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .page-preview {
+            width: 120px;
+            text-align: center;
+        }
+
+        .page-preview img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .page-preview p {
+            margin-top: 5px;
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .upload-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF to WebP Converter</h1>
+        <p class="subtitle">Convert PDF pages to WebP images and download as ZIP</p>
+        
+        <div class="input-group">
+            <label for="folderName">Folder Name (for ZIP file):</label>
+            <input type="text" id="folderName" placeholder="Enter folder name (optional)" value="PDF_Images">
+        </div>
+        
+        <div class="upload-area" id="dropArea">
+            <i>📄</i>
+            <p>Drag & Drop your PDF file here</p>
+            <p>or</p>
+            <input type="file" id="pdfInput" accept=".pdf" class="hidden">
+            <button class="btn" id="browseBtn">Browse Files</button>
+        </div>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="progress-text" id="progressText">Converting page 1 of 0</div>
+        </div>
+        
+        <div id="output"></div>
+        
+        <button class="btn download-btn" id="downloadBtn" disabled>Download All as ZIP</button>
+        
+        <div class="page-previews" id="previewContainer"></div>
+    </div>
+    
+    <footer>
+        <p>PDF to WebP Converter &copy; 2023</p>
+    </footer>
+
+    <script>
+        // Set up PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // DOM elements
+        const pdfInput = document.getElementById('pdfInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const dropArea = document.getElementById('dropArea');
+        const folderNameInput = document.getElementById('folderName');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const outputDiv = document.getElementById('output');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewContainer = document.getElementById('previewContainer');
+
+        // Variables
+        let convertedImages = [];
+        let currentPage = 0;
+        let totalPages = 0;
+
+        // Event listeners
+        browseBtn.addEventListener('click', () => pdfInput.click());
+        pdfInput.addEventListener('change', handleFileSelect);
+        downloadBtn.addEventListener('click', downloadZip);
+
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.style.backgroundColor = '#e1f5fe';
+            dropArea.style.borderColor = '#0288d1';
+        }
+
+        function unhighlight() {
+            dropArea.style.backgroundColor = '#f8fafc';
+            dropArea.style.borderColor = '#3498db';
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            pdfInput.files = files;
+            handleFileSelect();
+        }
+
+        // Handle file selection
+        function handleFileSelect() {
+            const file = pdfInput.files[0];
+            if (!file) return;
+            
+            // Reset state
+            convertedImages = [];
+            currentPage = 0;
+            previewContainer.innerHTML = '';
+            outputDiv.innerHTML = '';
+            downloadBtn.disabled = true;
+            downloadBtn.style.display = 'none';
+            
+            // Start conversion
+            convertPDF(file);
+        }
+
+        // Main conversion function
+        async function convertPDF(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+                totalPages = pdf.numPages;
+                
+                // Show progress
+                progressContainer.style.display = 'block';
+                progressBar.style.width = '0%';
+                progressText.textContent = `Converting page 1 of ${totalPages}`;
+                
+                outputDiv.innerHTML = '<p>Converting PDF to WebP images...</p>';
+                
+                // Convert each page
+                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                    currentPage = pageNum;
+                    await convertPage(pdf, pageNum);
+                    
+                    // Update progress
+                    const progress = (pageNum / totalPages) * 100;
+                    progressBar.style.width = `${progress}%`;
+                    progressText.textContent = `Converting page ${pageNum} of ${totalPages}`;
+                }
+                
+                // Conversion complete
+                progressText.textContent = 'Conversion complete!';
+                outputDiv.innerHTML = `<p>Successfully converted ${totalPages} pages to WebP format.</p>`;
+                downloadBtn.disabled = false;
+                downloadBtn.style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('Error converting PDF:', error);
+                outputDiv.innerHTML = `<p style="color: #e74c3c;">Error converting PDF: ${error.message}</p>`;
+            }
+        }
+
+        // Convert a single page
+        async function convertPage(pdf, pageNum) {
+            try {
+                const page = await pdf.getPage(pageNum);
+                const scale = 1.5; // Balance between quality and file size
+                const viewport = page.getViewport({ scale });
+
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // Render PDF page to canvas
+                await page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                }).promise;
+
+                // Convert to WebP and store in array
+                return new Promise((resolve) => {
+                    canvas.toBlob((blob) => {
+                        const imageData = {
+                            blob: blob,
+                            pageNum: pageNum
+                        };
+                        convertedImages.push(imageData);
+                        
+                        // Create preview
+                        const url = URL.createObjectURL(blob);
+                        const previewDiv = document.createElement('div');
+                        previewDiv.className = 'page-preview';
+                        previewDiv.innerHTML = `
+                            <img src="${url}" alt="Page ${pageNum}">
+                            <p>Page ${pageNum}</p>
+                        `;
+                        previewContainer.appendChild(previewDiv);
+                        
+                        resolve();
+                    }, 'image/webp', 0.85); // 85% quality
+                });
+
+            } catch (error) {
+                console.error(`Error converting page ${pageNum}:`, error);
+            }
+        }
+
+        // Download all images as ZIP
+        async function downloadZip() {
+            if (convertedImages.length === 0) {
+                alert('No images to download');
+                return;
+            }
+            
+            try {
+                downloadBtn.disabled = true;
+                downloadBtn.textContent = 'Creating ZIP...';
+                
+                const zip = new JSZip();
+                const folder = zip.folder(folderNameInput.value || 'PDF_Images');
+                
+                // Add each image to the ZIP
+                convertedImages.forEach(image => {
+                    const fileName = `page_${image.pageNum}.webp`;
+                    folder.file(fileName, image.blob);
+                });
+                
+                // Generate and download ZIP
+                const zipBlob = await zip.generateAsync({type: 'blob'});
+                const url = URL.createObjectURL(zipBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `${folderNameInput.value || 'PDF_Images'}.zip`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+                
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = 'Download All as ZIP';
+                
+            } catch (error) {
+                console.error('Error creating ZIP:', error);
+                alert('Error creating ZIP file');
+                downloadBtn.disabled = false;
+                downloadBtn.textContent = 'Download All as ZIP';
+            }
+        }
+    </script>
+</body>
+</html>
