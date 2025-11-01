@@ -58,7 +58,7 @@ app.post("/upload", upload.array("files"), async (req, res) => {
 
         await sharp(fileBuffer)
           .resize({ width: 800, withoutEnlargement: true })
-          .webp({ quality: 80 })
+          .webp({ quality: 100 })
           .toFile(destPath);
         
         await fsPromises.unlink(f.path);
