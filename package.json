@@ -1,0 +1,27 @@
+{
+  "name": "simple-menu-pdf-viewer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "convert": "node convert-menus.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoTimeInnovations/cravings_pdf_viewer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NoTimeInnovations/cravings_pdf_viewer/issues"
+  },
+  "homepage": "https://github.com/NoTimeInnovations/cravings_pdf_viewer#readme",
+  "dependencies": {
+    "pdf-poppler": "^0.2.3",
+    "pdf2pic": "^3.2.0",
+    "sharp": "^0.34.4"
+  }
+}

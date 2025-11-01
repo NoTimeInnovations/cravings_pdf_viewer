@@ -1,55 +1,44 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const restaurant = urlParams.get("restaurant");
-  const pdfContainer = document.getElementById("pdf-container");
-  const loadingScreen = document.getElementById("loading-screen");
-
-  if (!restaurant) {
-    pdfContainer.innerHTML =
-      "<p style='text-align:center;color:white;margin:30px;'>No restaurant specified</p>";
-    return;
-  }
-
-  const pdfPath = `assets/${restaurant}.pdf`;
+  const menuList = document.getElementById("menu-list");
 
   try {
-    // Load the PDF
-    const pdf = await pdfjsLib.getDocument(pdfPath).promise;
+    const response = await fetch("menuList.json");
+    const restaurants = await response.json();
 
-    // Clear loading screen
-    loadingScreen.style.display = "none";
-
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-
-      // Scale for clarity
-      const scale = 2; // higher = sharper
-      const viewport = page.getViewport({ scale });
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-
-      // High DPI support for retina displays
-      const outputScale = window.devicePixelRatio || 1;
-      canvas.width = viewport.width * outputScale;
-      canvas.height = viewport.height * outputScale;
-      canvas.style.width = `${viewport.width}px`;
-      canvas.style.height = `${viewport.height}px`;
-
-      const transform =
-        outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : null;
-
-      const renderContext = {
-        canvasContext: context,
-        transform,
-        viewport,
-      };
-
-      await page.render(renderContext).promise;
-      pdfContainer.appendChild(canvas);
+    if (restaurants.length === 0) {
+      menuList.innerHTML = `<p class="text-center text-gray-600 col-span-full">No menus available yet.</p>`;
+      return;
     }
+
+    restaurants.forEach((name) => {
+      const card = document.createElement("div");
+      card.className =
+        "menu-card bg-white rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center transition hover:shadow-lg hover:scale-[1.02]";
+      card.innerHTML = `
+        <h3 class="text-xl font-semibold text-gray-800 mb-3 capitalize">${name}</h3>
+        <button 
+          data-name="${name}" 
+          class="view-pdf px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition">
+          View Menu <i data-feather="eye"></i>
+        </button>
+      `;
+      menuList.appendChild(card);
+    });
+
+    feather.replace();
+
+    // Button click -> redirect to viewer
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("view-pdf") || e.target.closest(".view-pdf")) {
+        const button = e.target.classList.contains("view-pdf")
+          ? e.target
+          : e.target.closest(".view-pdf");
+        const name = button.getAttribute("data-name");
+        window.location.href = `menu.html?restaurant=${name}`;
+      }
+    });
   } catch (error) {
-    console.error("Error loading PDF:", error);
-    loadingScreen.innerHTML =
-      "<p style='color:red;'>Failed to load menu. Please try again later.</p>";
+    console.error("Error loading menu list:", error);
+    menuList.innerHTML = `<p class="text-center text-red-500 col-span-full">Failed to load menus.</p>`;
   }
 });

@@ -1,1 +1,21 @@
+# Node modules
+node_modules/
+
+# Local PDFs (not needed in production)
+assets/
+
+# Conversion script and related files
+convert-menus.mjs
+
+# Logs and temp files
+*.log
+*.tmp
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Environment or local config
+.env
+
 /gemini menu creator
