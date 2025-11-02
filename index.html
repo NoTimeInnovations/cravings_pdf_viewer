@@ -5,21 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gourmet Gallery Navigator</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+    .gradient-bg {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .card-hover {
+      transition: all 0.3s ease;
+    }
+    .card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-  <main class="container mx-auto px-4 py-8">
-    <div class="text-center mb-12">
-      <h1 class="text-4xl font-bold text-gray-800 mb-4">Our Delicious Menu Collection</h1>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 min-h-screen">
+  <!-- Header with Converter Button -->
+  <header class="gradient-bg shadow-lg">
+    <div class="container mx-auto px-4 py-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl md:text-4xl font-bold text-white">🍽️ Menu Gallery</h1>
+          <p class="text-purple-100 mt-1">Explore our culinary collections</p>
+        </div>
+        <a href="/converter" class="bg-white text-purple-600 px-6 py-3 rounded-full font-semibold hover:bg-purple-50 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2">
+          <span>📄</span>
+          <span>Upload Menu</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-4 py-12">
+    <div class="text-center mb-12 fade-in">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">Our Restaurant Partners</h2>
       <p class="text-lg text-gray-600 max-w-2xl mx-auto">
-        Browse through our carefully crafted culinary selections
+        Browse through our carefully crafted culinary selections from premium restaurants
       </p>
     </div>
 
-    <div id="partner-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <!-- Loading State -->
+    <div id="loading" class="text-center py-12">
+      <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <p class="mt-4 text-gray-600">Loading menus...</p>
+    </div>
+
+    <!-- Partner List -->
+    <div id="partner-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 hidden">
       <!-- Partner items inserted dynamically -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="text-center py-16 hidden">
+      <div class="text-6xl mb-4">📭</div>
+      <h3 class="text-2xl font-semibold text-gray-700 mb-2">No Menus Available</h3>
+      <p class="text-gray-600 mb-6">Be the first to upload a menu!</p>
+      <a href="/converter" class="inline-block bg-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-purple-700 transition-all duration-300 shadow-lg">
+        Upload First Menu
+      </a>
     </div>
   </main>
 
+
   <script src="/public/scripts/getPartner.js"></script>
+  <script>
+    // Enhanced loading state management
+    document.addEventListener('DOMContentLoaded', () => {
+      const loading = document.getElementById('loading');
+      const partnerList = document.getElementById('partner-list');
+      const emptyState = document.getElementById('empty-state');
+
+      // Wait for partner list to load
+      setTimeout(() => {
+        const hasPartners = partnerList.children.length > 0;
+        
+        loading.classList.add('hidden');
+        
+        if (hasPartners) {
+          partnerList.classList.remove('hidden');
+          partnerList.classList.add('fade-in');
+        } else {
+          emptyState.classList.remove('hidden');
+          emptyState.classList.add('fade-in');
+        }
+      }, 500);
+    });
+  </script>
 </body>
 </html>

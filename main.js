@@ -5,6 +5,9 @@ const fs = require("fs");
 const fsPromises = fs.promises;
 const multer = require("multer");
 const sharp = require("sharp");
+const { exec } = require("child_process");
+const util = require("util");
+const execPromise = util.promisify(exec);
 
 // Temporary upload folder for multer
 const TMP_UPLOAD_DIR = path.join(__dirname, "tmp_uploads");
@@ -103,6 +106,17 @@ app.post("/upload", upload.array("files"), async (req, res) => {
       );
     }
 
+    // Git commit and push
+    try {
+      await execPromise('git add .');
+      await execPromise(`git commit -m "Add/Update menu for ${partner}"`);
+      await execPromise('git push');
+      console.log(`Successfully committed and pushed changes for ${partner}`);
+    } catch (gitError) {
+      console.error('Git operation failed:', gitError.message);
+      // Don't fail the upload if git fails, just log it
+    }
+
     return res.json({ success: true, partner });
   } catch (err) {
     console.error("Upload error:", err);
@@ -127,7 +141,7 @@ app.get("/test", async (req, res) => {
   res.send("Test completed");
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
