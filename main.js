@@ -109,7 +109,7 @@ app.post("/upload", upload.array("files"), async (req, res) => {
     // Git commit and push
     try {
       await execPromise('git add .');
-      await execPromise(`git commit -m "Add/Update menu for ${partner}"`);
+      await execPromise(`git commit -m "Add menu for ${partner}"`);
       await execPromise('git push');
       console.log(`Successfully committed and pushed changes for ${partner}`);
     } catch (gitError) {
