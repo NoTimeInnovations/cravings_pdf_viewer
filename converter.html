@@ -459,7 +459,7 @@
                 // Add partner/folder name
                 formData.append('partner', partnerName);
 
-                const resp = await fetch('/upload', {
+                const resp = await fetch('/ne-menu/upload', {
                     method: 'POST',
                     body: formData
                 });
