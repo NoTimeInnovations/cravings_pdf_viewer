@@ -470,10 +470,70 @@
                 }
 
                 const result = await resp.json();
-                outputDiv.innerHTML = `<p style="color: #2ecc71;">Upload successful. Partner: ${result.partner}</p>`;
-                // show previews remain and optionally link to new data
-                downloadBtn.textContent = 'Upload to Server';
-                downloadBtn.disabled = false;
+                const partner = result.partner;
+
+                // Build the public link to the partner menu page
+                const linkUrl = `https://menu.cravings.live/menu?partner=${encodeURIComponent(partner)}`;
+
+                // Hide other UI elements so only the link/buttons are visible
+                downloadBtn.style.display = 'none';
+                downloadBtn.disabled = true;
+                dropArea.style.display = 'none';
+                previewContainer.style.display = 'none';
+                progressContainer.style.display = 'none';
+                folderNameInput.style.display = 'none';
+
+                // Create link and buttons
+                outputDiv.innerHTML = '';
+
+                const linkWrapper = document.createElement('div');
+                linkWrapper.style.display = 'flex';
+                linkWrapper.style.flexDirection = 'column';
+                linkWrapper.style.alignItems = 'center';
+                linkWrapper.style.gap = '12px';
+
+                const anchor = document.createElement('a');
+                anchor.href = linkUrl;
+                anchor.textContent = linkUrl;
+                anchor.target = '_blank';
+                anchor.rel = 'noopener';
+                anchor.style.wordBreak = 'break-all';
+                anchor.className = 'btn';
+
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'btn';
+                copyBtn.textContent = 'Copy link';
+                copyBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.clipboard.writeText(linkUrl);
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => (copyBtn.textContent = 'Copy link'), 2000);
+                    } catch (e) {
+                        // fallback
+                        const tmp = document.createElement('textarea');
+                        tmp.value = linkUrl;
+                        document.body.appendChild(tmp);
+                        tmp.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tmp);
+                        copyBtn.textContent = 'Copied!';
+                        setTimeout(() => (copyBtn.textContent = 'Copy link'), 2000);
+                    }
+                });
+
+                const goBackBtn = document.createElement('button');
+                goBackBtn.className = 'btn';
+                goBackBtn.textContent = 'Go back';
+                goBackBtn.addEventListener('click', () => {
+                    // Navigate back to the app root under /ne-menu
+                    window.location.href = '/ne-menu';
+                });
+
+                linkWrapper.appendChild(anchor);
+                linkWrapper.appendChild(copyBtn);
+                linkWrapper.appendChild(goBackBtn);
+
+                outputDiv.appendChild(linkWrapper);
 
             } catch (err) {
                 console.error('Upload error:', err);

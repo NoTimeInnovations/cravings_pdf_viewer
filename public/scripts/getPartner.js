@@ -14,7 +14,7 @@ const getPartners = async () => {
     partners.forEach(partner => {
       const listItem = document.createElement("a");
       listItem.innerText = partner;
-      listItem.href = `menu.html?partner=${partner}`;
+      listItem.href = `https://menu.cravings.live/menu.html?partner=${partner}`;
       partnerList.appendChild(listItem);
     });
 
