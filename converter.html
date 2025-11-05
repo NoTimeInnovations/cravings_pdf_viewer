@@ -227,7 +227,7 @@
         
         <div class="input-group">
             <label for="folderName">Folder Name (for ZIP file):</label>
-            <input type="text" id="folderName" placeholder="Enter folder name (optional)" value="PDF_Images">
+            <input type="text" id="folderName" pattern="[a-z0-9_-]+" title="Lowercase letters, numbers, - and _ only" placeholder="Enter folder name (lowercase)" value="pdf_images" oninput="this.value = this.value.toLowerCase().replace(/[^a-z0-9_-]/g, '');">
         </div>
         
         <div class="upload-area" id="dropArea">
